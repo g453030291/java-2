@@ -82,3 +82,233 @@ String a = new String("b");创建了几个对象？
 
 #### 九、String有没有长度限制，为什么？如果有，超过限制会发生什么？
 
+编译期：
+
+	最多可以存储65534个字符。因为String会在常量池中存储一份，这个限制其实是常量池的限制。所有在常量池中保存的数据，长度最大不能超过65535。
+
+运行期：
+
+	最大可以存储Integer.MAX_VALUE个字符。约等于4G。
+
+#### 十、String的“+”是如何实现的？
+
+1.String s = “a“ + ”b“；编译器会进行常量折叠（因为两个都是编译期常量，编译期可知），即变成String s = ”ab“；
+
+2.对于能够优化的String s = ”a“ + 变量；使用StringBuilder的append()方法替代，最后调用toString()方法。（底层就是new String()）。
+
+#### 十一、String、StringBuilder、StringBuffer之间的区别与联系？
+
+String：String是不可变对象，每次对String进行操作，等同于生成了一个新的String对象，操作完成后将指针指向新的String对象。所以经常改变内容的，推荐使用StringBuffer。他每次的操作都是对对象本身进行。
+
+StringBuffer：线程安全的可变字符串序列。一个类似于String的字符串缓冲区，可将字符串缓冲区安全的用于多个线程。StringBuffer上主要操作是append和insert方法，可重载这些方法以接受任意类型数据。
+
+StringBuilder：提供一个与StringBuffer兼容的API，但不保证同步，该类被设计用于StringBuffer的一个简易替换，用于字符串缓冲区被单个线程使用时。（大多数实现中，它比StringBuffer要快）
+
+#### 十二、SubString方法到底做了什么？不同版本JDK有什么区别？
+
+subString(int beginIndex, int endIndex);方法截取字符串并返回其[beginIndex,endIndex-1]范围的内容。
+
+JDK1.6：
+
+String是通过字符数组实现的。在jdk1.6中，String包含三个成员变量：char value[],int offset, int count。他们分别用来存储真正的字符数组，数组第一个位置索引以及字符串中包含的字符个数。
+
+当调用substring方法时，会创建一个新的string对象，但是这个string的值仍然指向堆中的同一个字符数组。这两个对象中只有count和offset的值不同。
+
+问题：
+
+如果你有一个很长很长的字符串，当你使用substring方法时，这可能导致性能问题。如果你只需要很短一个字符，但底层substring却引用了整个字符串（因为这个长的字符数组一直被引用，所以无法被回收，可能会导致内存泄漏）。在jdk1.6中，使用x = x.substring (x,y) + "";来解决该问题。其原理就是生成一个新的字符串并引用他。
+
+JDK1.7:
+
+上面提到的问题，在jdk1.7中得到解决。jdk1.7的substring方法会在堆中创建一个新的数组（对字符串截取后会return new String()）。避免对老字符串的引用。来解决内存泄漏的问题。
+
+#### 十三、如何理解String的intern方法，不同版本JDK有何不同？为什么？
+
+Intern();是String的public方法，用法是：
+
+```java
+String s1 = new String("aa");
+String s2 = s2.intern();
+System.out.pringln(s1==s2);
+----->true;
+```
+
+当一个String实例调用intern()方法时，Java查找常量池中是否有相同的Unicode的字符串常量，如果有，返回其引用，如果没有，则在常量池中增加一个Unicode等于str的字符串并返回其引用。
+
+不同版本的JDK有何不同？
+
+```java
+String str1 = new StringBuilder("aa").append("bb").toString();
+System.out.pringtl(str1.intern()==str1);
+JDK1.6---->false;
+JDK1.7---->true;
+```
+
+1.JDK1.6和JDK1.7的intern()表现不同，原因是Java7常量池的位置从PermGen区改到了Java堆中。
+
+2.JDK1.6中intern方法会把首次遇到的字符串实例复制到永久带（常量池）中，并返回此引用。但是在JDK1.7中，只会把首次遇到的字符串实例添加到常量池中（没有复制），并返回其引用。
+
+3.对意义上代码的str1.intern(),在JDK1.6中，会把aabb这个字符串复制到常量池中，并返回他的引用。所以str1.intern()的值和str1的值，即两个对象的地址是不一样的。
+
+4.对于以上代码中的str1.intern()，在JDK1.7中，会把str2的引用保存到常量池中，并把这个引用返回。所有str1.intern()的值和str1的值相等。
+
+另：
+
+```java
+String str2 = new StringBuilder("ja").append("va").toString();
+System.out.println(str2.intern==str2);
+```
+
+以上代码,在JDK1.6和JDK1.7中都返回false。因为"java"这个常量在常量池中已经有了。这个字符串在Java中随处可见，肯定被初始化过。在JDK1.7中str2.intern()返回的内容是很久之前初始化时候的引用，自然和刚刚创建的字符串的引用不相等。
+
+#### 十四、Java中整型的缓存机制
+
+```java
+public static void main(String... args){
+    Integer integer1 = 3;
+    Integer integer2 = 3;
+    
+    if(integer1 == integer2){
+        System.out.println("integer1 == integer2");
+    }else{
+        System.out.println("integer1 != integer2");
+    }
+    
+    Integer integer3 = 300;
+    Integer integer4 = 300;
+    
+    if(integer3 == integer4){
+        System.out.println("integer3 == integer4");
+    }else{
+        System.out.println("integer3 != integer4");
+    }
+}
+```
+
+上面输出的结果是：
+
+Integer1 == integer2
+
+Integer3 != integer4
+
+Java中Integer的缓存实现：
+
+在Java1.5中，在Integer操作上引入了一个新功能来节省内存提高性能。整型对象通过使用相同的对象引用实现了缓存和重用。（用于与整数值区间-128至+127。只适用于自动装箱。使用构造函数创建对象不适用。）
+
+Java的编译器把基本数据类型自动转换成封装对象的过程，叫自动装箱。相当于使用valueOf方法：
+
+```java
+Integer a = 10;//autoboxing
+
+Integer b = Integer.valueOf(10);//under the hood
+```
+
+##### 下面是valueOf的源码实现(JDK1.8)
+
+```java
+/**
+     * Returns an {@code Integer} instance representing the specified
+     * {@code int} value.  If a new {@code Integer} instance is not
+     * required, this method should generally be used in preference to
+     * the constructor {@link #Integer(int)}, as this method is likely
+     * to yield significantly better space and time performance by
+     * caching frequently requested values.
+     *
+     * This method will always cache values in the range -128 to 127,
+     * inclusive, and may cache other values outside of this range.
+     *
+     * @param  i an {@code int} value.
+     * @return an {@code Integer} instance representing {@code i}.
+     * @since  1.5
+     */
+    public static Integer valueOf(int i) {
+        if (i >= IntegerCache.low && i <= IntegerCache.high)
+            return IntegerCache.cache[i + (-IntegerCache.low)];
+        return new Integer(i);
+    }
+```
+
+在创建对象前先从IntegerCache.cache中寻找。如果没找到才使用new新建对象。
+
+##### 下面是IntegerCache的源码实现：
+
+```java
+/**
+     * Cache to support the object identity semantics of autoboxing for values between
+     * -128 and 127 (inclusive) as required by JLS.
+     *
+     * The cache is initialized on first usage.  The size of the cache
+     * may be controlled by the {@code -XX:AutoBoxCacheMax=<size>} option.
+     * During VM initialization, java.lang.Integer.IntegerCache.high property
+     * may be set and saved in the private system properties in the
+     * sun.misc.VM class.
+     */
+
+    private static class IntegerCache {
+        static final int low = -128;
+        static final int high;
+        static final Integer cache[];
+
+        static {
+            // high value may be configured by property
+            int h = 127;
+            String integerCacheHighPropValue =
+                sun.misc.VM.getSavedProperty("java.lang.Integer.IntegerCache.high");
+            if (integerCacheHighPropValue != null) {
+                try {
+                    int i = parseInt(integerCacheHighPropValue);
+                    i = Math.max(i, 127);
+                    // Maximum array size is Integer.MAX_VALUE
+                    h = Math.min(i, Integer.MAX_VALUE - (-low) -1);
+                } catch( NumberFormatException nfe) {
+                    // If the property cannot be parsed into an int, ignore it.
+                }
+            }
+            high = h;
+
+            cache = new Integer[(high - low) + 1];
+            int j = low;
+            for(int k = 0; k < cache.length; k++)
+                cache[k] = new Integer(j++);
+
+            // range [-128, 127] must be interned (JLS7 5.1.7)
+            assert IntegerCache.high >= 127;
+        }
+
+        private IntegerCache() {}
+    }
+```
+
+	javadoc详细说明了缓存支持-128到+127之间的自动装箱过程。最大值127可以通过-XX:AutoBoxCacheMax=size修改。缓存通过一个for循环实现，从低到高创建尽可能多的整数并存储在一个整数数组中。这个缓存会在Integer类第一次被使用的时候初始化出来。以后就可以使用混存中包含的实例对象。
+
+	实际上这个功能在JDK1.5中第一次引入时，范围是固定的-128到+127。后来在JDK1.6中，可以通过java.lang.Integer.IntegerCache.high设置最大值。这样我们可以根据需求灵活配置缓存来提高性能。
+
+##### Java语言规范中的缓存行为：
+
+在Boxing Conversion部分的Java语言规范规定如下：
+
+如果一个变量p的值是：
+
+1.-128到+127之间的整数
+
+2.true和false的布尔值
+
+3.'\u000'至'\u007f'之间的字符
+
+中时，将p包装成a和b两个对象时，可以直接使用a==b来判断a和b的值是否相等。
+
+##### 其他缓存的对象：
+
+这种缓存行为不仅适用于Integer，所有整数的类型都有类似的缓存机制。
+
+ByteCache用于缓存Byte对象。
+
+ShortCache用于缓存Short对象。
+
+LongCache用于缓存Long对象。
+
+CharacterCache用于缓存Character对象。
+
+Byte,Short,Long有固定范围：-128到+127。对于Character范围是0到127。除了Integer以外，这个范围都不能改变。
+
+##### 

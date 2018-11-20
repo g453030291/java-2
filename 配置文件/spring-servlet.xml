@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!-- 这里是Springmvc的配置,配置的是所有与请求相关的配置 -->
+
+    <!-- 有了这个标签,上下文的注解就会自动被Spring进行管理-->
+    <context:annotation-config/>
+
+    <!-- 启动注解驱动的spring mvc功能 -->
+    <!-- @controller、@service等可以自动被Spring所管理 -->
+    <mvc:annotation-driven/>
+
+    <!-- 启动包扫描功能 -->
+    <context:component-scan base-package="com.mmall.controller"/>
+    <context:component-scan base-package="com.mmall.service"/>
+
+    <!--&lt;!&ndash; 这个bean是使用@requestmapping的时候,处理访问路径对应的代码 &ndash;&gt;-->
+    <!--<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>-->
+    <!-- 这里是配置返回的数据格式html、json、或者一个文件pdf、txt等等 -->
+    <bean class="org.springframework.web.servlet.view.BeanNameViewResolver"/>
+    <!-- @requestmapping配置的返回json格式的时候,使用这个类来进行处理(这里的id是固定的,必须是jsonView) -->
+    <bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJackson2JsonView"/>
+    <!-- jsp返回的处理类 -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/views/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!-- 释义:这里四个bean,第一个,配置requet的处理类
+                    第二个,配置返回的格式有哪些
+                    第三个,如果返回json用这个bean处理
+                    第四个,如果返回jsp用这个bean处理-->
+
+</beans>

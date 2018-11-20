@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 这里的配置可以查看mybatis中提供的一个configuration的类 -->
+    <settings>
+        <setting name="safeRowBoundsEnabled" value="true"/>
+        <setting name="cacheEnabled" value="false"/>
+        <setting name="useGeneratedKeys" value="true"/>
+    </settings>
+
+    <!--<typeAliases>-->
+        <!--&lt;!&ndash; 这里定义的是某个类对应的sql中的别名,-->
+                <!--比如,com.aa这个类,可以直接在mapper.xml中使用bb来代替aa这个类,这样可以使sql变得简单一些&ndash;&gt;-->
+        <!--&lt;!&ndash;typeAlias type="com.aa" alias="bb"/&ndash;&gt;-->
+    <!--</typeAliases>-->
+
+    <!-- 这个相当于mybatis的监听器,可以在sql执行前后做一些操作,比如监控sql执行时间等 -->
+    <!--<plugins>-->
+        <!--<plugin interceptor=""></plugin>-->
+    <!--</plugins>-->
+
+    <!-- 当本地的类与sql无法映射的时候,可以使用typeHandler将数据库查询出的一个对象转化成本地的一个对象,
+        多出现在枚举类型无法映射的时候需要用到 -->
+    <!--<typeHandlers>-->
+        <!--<typeHandler handler="" javaType="" jdbcType=""/>-->
+    <!--</typeHandlers>-->
+
+</configuration>

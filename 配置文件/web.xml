@@ -1,0 +1,95 @@
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+
+  <display-name>Archetype Created Web Application</display-name>
+
+  <!-- 加载spring上下文 -->
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+
+  <!-- spring beans 配置文件所在目录 -->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:applicationContext.xml</param-value>
+  </context-param>
+
+  <!-- spring mvc 配置 -->
+  <!-- 这里必须要新建一个springmvc的配置文件,名称是固定的,以下面的servlet-name的值为开头,后接"-servlet.xml" -->
+  <!-- 也就是这里WEB-INF下的spring-servlet.xml -->
+  <servlet>
+    <servlet-name>spring</servlet-name>
+    <!-- 这里相当于配置springmvc的dispatcherservlet来处理所有的请求 -->
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>spring</servlet-name>
+    <!-- 只能匹配/aa这样的路径型的地址,不能匹配带后缀的类似.js、.css、.jsp这样的请求 -->
+    <!-- 因此,.jsp页面在返回的时候,就不会进入到DispatcherServlet -->
+    <!-- 为什么页面的路径型请求不会命中DispatcherServlet?-->
+    <!--    因为servlet容器内建的jspservlet会被调用,而容器内建的jspservlet已经默认映射到了/*.jsp的路径上
+            但是,*.js、*.css,也都需要编码,所有springmvc的servlet要配置成/,而encoding的要配置成/*-->
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+
+  <!-- 编码过滤器 encoding -->
+  <filter>
+    <filter-name>encodingFilter</filter-name>
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>UTF-8</param-value>
+    </init-param>
+    <init-param>
+      <!-- 这里配置使用强制编码 -->
+      <param-name>forceEncoding</param-name>
+      <param-value>true</param-value>
+    </init-param>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>encodingFilter</filter-name>
+    <url-pattern>/*</url-pattern><!-- /*可以全部匹配/aa、/aa.jsp、/aa.js、/aa.css -->
+  </filter-mapping>
+
+  <!-- druid -->
+  <servlet>
+    <servlet-name>DruidStatServlet</servlet-name>
+    <servlet-class>com.alibaba.druid.support.http.StatViewServlet</servlet-class>
+    <!-- 配置登陆druid的用户名、密码 -->
+    <init-param>
+      <param-name>loginUsername</param-name>
+      <param-value>druid</param-value>
+    </init-param>
+    <init-param>
+      <param-name>loginPassword</param-name>
+      <param-value>druid</param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DruidStatServlet</servlet-name>
+    <!-- 自定义的请求路径,加上sys可以方便全局的权限拦截使用 -->
+    <url-pattern>/sys/druid/*</url-pattern>
+  </servlet-mapping>
+  <filter>
+    <filter-name>DruidWebStatFilter</filter-name>
+    <filter-class>com.alibaba.druid.support.http.WebStatFilter</filter-class>
+    <!-- 过滤一些不需要拦截的请求 -->
+    <init-param>
+      <param-name>exclusions</param-name>
+      <param-value>*.js,*.css,*.jpg,*.png,*.ico,*.gif,/sys/druid/*</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>DruidWebStatFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+</web-app>
