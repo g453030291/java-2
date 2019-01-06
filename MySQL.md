@@ -248,7 +248,7 @@ Explain（***）
 
 2.explain结果分析：
 
-重点：id、type、key
+重点：id、type、key、rows、extra
 
 ##### id：
 
@@ -293,4 +293,80 @@ table：显示这一行的数据是关于那张表的。
 
 查询中若使用了覆盖索引，则该索引仅出现在key列表中。
 
+##### Key_len:
+
+表示索引中使用的字节数，可通过该列计算查询中使用的索引的长度。在不损失精确性的情况下，长度越短越好。key_len现实的值为索引字段的最大可能长度，并非实际使用长度，即key_len是根据表定义计算而得，不是通过表内检索出的。
+
+##### ref:
+
+显示索引的哪一列被使用了，如果可能的话，是一个常数，哪些列或常量被用于查找索引列上的值
+
+##### rows：
+
+根据表统计信息及索引选用情况，大致估算出找到所需的记录所需要读取的行数
+
+##### extra:
+
+重点:using filesort、using temporary、using index
+
+包含不适合在其他列中显示但十分重要的额外信息。
+
+1.using filesort：说明mysql会对数据使用一个外部的索引排序，而不是按照表内的索引顺序进行读取。mysql中无法利用索引完成的排序操作称为“文件排序”。
+
+2.using temporary：使用了临时表保存中间结果，mysql在对查询结果排序时使用临时表。常见于排序order by和分组查询group by。
+
+3.using index：表示相应的select操作中使用了覆盖索引（Covering Index），避免访问了表的数据行，效率不错。如果同时出现using where，表明索引被用来执行索引键值的查找；如果没有同时出现using where，表明索引用来读取数据而非执行查找动作。
+
+覆盖索引的概念有两种：
+
+	1.就是select的数据列只用从索引中就能取得，不必读取数据行，mysql可以利用索引返回select列表中的字段，而不必根据索引再次读取数据文件，换句话说查询列表要被所建的索引覆盖。
+
+	2.索引是高效找到行的一个方法，但是一般数据库也能使用索引找到一个列的数据，因此它不必读取整个行。毕竟索引叶子节点存储了它们索引的数据；当能通过读取索引就可以得到想要的数据，那就不需要读取行了。一个索引包含了（或覆盖了）满足查询结果的数据也就叫做覆盖索引。
+
+注意：如果要使用覆盖索引，一定要注意select列表中只取出需要的列，不可select *。因为如果将所有字段一起做索引会导致索引文件过大，查询性能下降。
+
+4.using where：表明使用了where过滤
+
+5.using join buffer：使用了连接缓存
+
+6.impossible where：where子句的值总是false，不能用来获取任何元素
+
+7.select tables optimized away：在没有group by子句的情况下，基于索引优化min/max操作或者对于MyISAM存储引擎优化count（*）操作，不必等到执行阶段再进行计算，查询执行计划生成的阶段即完成优化。
+
+8.distinct：优化distinct操作，在找到第一匹配的元素后即停止找同样值的动作
+
+##### 优化实例1:
+
+![sql优化实例1](https://github.com/g453030291/java-2/blob/master/images/sql优化实例1.png)
+
+![sql实例1答案](https://github.com/g453030291/java-2/blob/master/images/sql实例1答案.png)
+
 #### 5.索引优化
+
+1.索引分析：
+
+单表：
+
+![sql优化实例2](https://github.com/g453030291/java-2/blob/master/images/sql优化实例2.png)
+
+分析sql性能：
+
+![sql优化实例2分析](https://github.com/g453030291/java-2/blob/master/images/sql优化实例2分析.png)
+
+第一次优化：
+
+![sql优化实例2优化1](https://github.com/g453030291/java-2/blob/master/images/sql优化实例2优化1.png)
+
+![sql优化实例2结论1](https://github.com/g453030291/java-2/blob/master/images/sql优化实例2结论1.png)
+
+	第一次试着对where后面的三个条件加上复合索引，解决了全表扫描，没有解决文件内排序。如果where后的条件都用等于，就会全使用索引。不会出现filesort。但实际情况是where后的条件往往是范围查询。所以本次优化失败。
+
+第二次优化：
+
+![sql优化实例2结论2](https://github.com/g453030291/java-2/blob/master/images/sql优化实例2结论2.png)
+
+两表：
+
+2.索引失效（应该避免）：
+
+3.一般性建议：
