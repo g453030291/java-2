@@ -345,7 +345,7 @@ table：显示这一行的数据是关于那张表的。
 
 1.索引分析：
 
-单表：
+##### 单表：
 
 ![sql优化实例2](https://github.com/g453030291/java-2/blob/master/images/sql优化实例2.png)
 
@@ -365,8 +365,92 @@ table：显示这一行的数据是关于那张表的。
 
 ![sql优化实例2结论2](https://github.com/g453030291/java-2/blob/master/images/sql优化实例2结论2.png)
 
-两表：
+##### 两表：
+
+![sql优化实例3book表](https://github.com/g453030291/java-2/blob/master/images/sql优化实例3book表.png)
+
+![sql优化实例3class表](https://github.com/g453030291/java-2/blob/master/images/sql优化实例3class表.png)
+
+![sql优化实例3](https://github.com/g453030291/java-2/blob/master/images/sql优化实例3.png)
+
+两表以book表和class为例，book表代表商品，class代表类别。
+
+![sql优化实例3分析1](https://github.com/g453030291/java-2/blob/master/images/sql优化实例3分析1.png)
+
+第一次优化：
+
+将book表的card字段加上索引，发现有了效果。
+
+![sql优化实例3优化1](https://github.com/g453030291/java-2/blob/master/images/sql优化实例3优化1.png)
+
+将class表的card字段加上索引，发现并没有效果。
+
+![sql优化实例3优化2](https://github.com/g453030291/java-2/blob/master/images/sql优化实例3优化2.png)
+
+结论：
+
+	由于左、右连接的特性决定，索引应该反着加（即左连接应给右表加索引，右连接应给左表加索引）。因为，拿左链接举例来说，左表是一定需要全部加载的，但对于右表却只需要加载一部分。所以这时候，确定右表需要加载哪些数据就很关键，所以索引需要加在右表。
+
+![sql优化实例3结论1](https://github.com/g453030291/java-2/blob/master/images/sql优化实例3结论1.png)
+
+##### 三表：
+
+![sql优化实例4phone表](https://github.com/g453030291/java-2/blob/master/images/sql优化实例4phone表.png)
+
+分析sql性能：
+
+![sql优化实例4分析1](https://github.com/g453030291/java-2/blob/master/images/sql优化实例4分析1.png)
+
+![sql优化实例4分析2](https://github.com/g453030291/java-2/blob/master/images/sql优化实例4分析2.png)
+
+三表全部是all，都是全表扫描，有性能问题，需要加索引，优化查询效率。
+
+第一次优化：
+
+![sql优化实例4优化1](https://github.com/g453030291/java-2/blob/master/images/sql优化实例4优化1.png)
+
+![sql优化实例4结果1](https://github.com/g453030291/java-2/blob/master/images/sql优化实例4结果1.png)
+
+结论：
+
+<u>sql的join查询，永远是小表驱动大表，来减少io。并且优先优化内层的嵌套查询。在被驱动的表字段加索引。并且，如果无法保证被驱动的表join条件被索引的情况下，就需要调整JoinBuffer的设置。</u>
+
+![sql优化实例4结论1](https://github.com/g453030291/java-2/blob/master/images/sql优化实例4结论1.png)
 
 2.索引失效（应该避免）：
 
-3.一般性建议：
+示例表：
+
+![索引失效示例表](https://github.com/g453030291/java-2/blob/master/images/索引失效示例表.png)
+
+案例（索引失效）：
+
+![索引失效案例详解](https://github.com/g453030291/java-2/blob/master/images/索引失效案例详解.png)
+
+##### 2.1.全值匹配我最爱：
+
+![索引失效示例表索引情况](https://github.com/g453030291/java-2/blob/master/images/索引失效示例表索引情况.png)
+
+正常使用上面建立的复合索引，是没有问题的。
+
+![索引失效示例表正常使用复合索引](https://github.com/g453030291/java-2/blob/master/images/索引失效示例表正常使用复合索引.png)
+
+出现了索引失效的情况：
+
+![索引失效示例表出现索引失效](https://github.com/g453030291/java-2/blob/master/images/索引失效示例表出现索引失效.png)
+
+复合索引建立的是name，age，pos的顺序。如果where后直接跟上name为开头，符合索引就会生效。如果不是name开头作为where后的条件，那么就会发生索引失效的情况。
+
+##### <u>2.2最佳左前缀法则</u>
+
+如果索引了多列，要遵守最左前缀法则。指的是查询从索引的最左前列开始，<u>并且不跳过索引中间的列。</u>
+
+![最佳左前缀法则](https://github.com/g453030291/java-2/blob/master/images/最佳左前缀法则.png)
+
+
+
+
+
+
+
+3.一般性建议：![sql优化实例2结论2](https://github.com/g453030291/java-2/blob/master/images/sql优化实例2结论2.png)
