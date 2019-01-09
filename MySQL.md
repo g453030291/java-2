@@ -447,10 +447,48 @@ table：显示这一行的数据是关于那张表的。
 
 ![最佳左前缀法则](https://github.com/g453030291/java-2/blob/master/images/最佳左前缀法则.png)
 
+##### 2.3不要在索引列上做任何操作（计算、函数、（自动or手动）类型转换），会导致索引失效而转向全表所描。 
 
+![不在索引列上做操作](https://github.com/g453030291/java-2/blob/master/images/不在索引列上做操作.png)
 
+##### 2.4存储引擎不能使用索引中范围条件右边的列。 
 
+![索引右边的列不能用](https://github.com/g453030291/java-2/blob/master/images/索引右边的列不能用.png)
 
+##### 2.5尽量使用覆盖索引（只访问索引的查询（索引列和查询列一致）），减少select *
 
+![减少select*](https://github.com/g453030291/java-2/blob/master/images/减少select*.png)
 
-3.一般性建议：![sql优化实例2结论2](https://github.com/g453030291/java-2/blob/master/images/sql优化实例2结论2.png)
+![减少select*2](https://github.com/g453030291/java-2/blob/master/images/减少select*2.png)
+
+##### 2.6mysql在使用不等于（!=或者<>）的时候无法使用索引会导致全表扫描
+
+![避免使用不等于](https://github.com/g453030291/java-2/blob/master/images/避免使用不等于.png)
+
+##### 2.7is null,is not null也无法使用索引
+
+![isnotnull](https://github.com/g453030291/java-2/blob/master/images/isnotnull.png)
+
+##### 2.8like以通配符开头('%abc...')mysql索引失效会变成全表扫描的操作
+
+![百分like加右边](https://github.com/g453030291/java-2/blob/master/images/百分like加右边.png)
+
+<u>问题：解决like‘%字符串%’时索引不被使用的方法？</u>
+
+<u>答：使用覆盖索引。将需要模糊查询的字段全部加上索引，即可解决全模糊匹配索引失效问题。</u>
+
+##### 2.9字符串不加单引号索引失效
+
+字符串不加单引号，mysql会在底层做阴式的类型转换。自动帮你加上单引号。这样就会造成索引失效。
+
+![字符串不加单引号](https://github.com/g453030291/java-2/blob/master/images/字符串不加单引号.png)
+
+##### 2.10少用or，用它来连接时会索引失效
+
+![少用or](https://github.com/g453030291/java-2/blob/master/images/少用or.png)
+
+##### 2.11总结练习
+
+![练习1](https://github.com/g453030291/java-2/blob/master/images/练习1.png)
+
+3.一般性建议：
