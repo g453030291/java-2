@@ -104,3 +104,46 @@ Java的动态代理，在日常开发中可能并不经常使用，但是并不�
 
 #### 五、Java实现动态代理的大致步骤是怎样的？
 
+1.定义一个委托类和公共接口。
+
+2.自己定义一个类（调用处理器类，即实现InvocationHandler接口），这个类的目的是指定运行时将生成的代理类需要完成的具体任务（包括Preprocess和Postprocess），即代理类调用任何方法都会经过这个调用处理器类。
+
+3.生成代理对象（当然也会生成代理类），需要为它指定(1)委托对象(2)实现的一些列接口(3)调用处理器类的实例。因此可以看出一个代理对象对应一个委托对象，对应一个调用处理器实例。
+
+#### 六、Java实现动态代理主要涉及哪几个类？
+
+java.lang.reflect.Proxy：这是生成代理类的主类，通过Proxy类生成的代理类都继承了Proxy类，即DynamicProxyClass extends Proxy。
+
+Java.lang.reflect.InvocationHandler：这里称它为“调用处理器”，它是一个接口，我们动态生成的代理类需要完成的具体内容需要自己定义一个类，而这个类必须实现InvocationHandler接口。
+
+#### 七、使用动态代理实现功能：不改变Test类的情况下，在方法target之前、之后打印一句话。
+
+```java
+public class UserServiceImpl implements UserService{
+    @Override
+    public void add(){
+        System.out.println("------------add---------------");
+    }
+}
+```
+
+解：
+
+```java
+public class MyInvocationHandler implements InvocationHandler{
+    private Object target;
+    public MyInvocationHandler(Object target){
+        super();
+        this.target=target;
+    }
+	
+    @Override
+    public Object invoke(Object proxy,Method method,Object[] args)throws Throwable{
+      PerformanceMonior.begin(target.getClass().getName()+"."+method.getName());
+    //System.out.println("-----hegin"+method.getName()+"-------");
+        
+    }
+}
+
+```
+
