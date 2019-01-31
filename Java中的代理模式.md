@@ -141,9 +141,77 @@ public class MyInvocationHandler implements InvocationHandler{
     public Object invoke(Object proxy,Method method,Object[] args)throws Throwable{
       PerformanceMonior.begin(target.getClass().getName()+"."+method.getName());
     //System.out.println("-----hegin"+method.getName()+"-------");
-        
+    Object result = method.invoke(target,args);
+    //System.out.println("-----end"+method.getName()+"---------");
+    PerformanceMonior.end();
+        return result;
+    }
+    
+    public Object getProxy(){
+        return Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),target.getClass().getInterfaces(),this);
     }
 }
 
+
+public static void main(String[] args){
+    UserService service = new UserServiceImpl();
+    MyInvocationHandler handler = new MyInvocationHandler(service);
+    UserService proxy = (UserService)handler.getProxy();
+    proxy.add();
+}
+
 ```
+
+#### 八、使用CGLIB动态实现功能：不改变Test类的情况下，在方法target之前打印一句话，之后打印一句话。
+
+```java
+public class UserServiceImpl implements UserService{
+    @Override
+    public void add(){
+        System.out.println("------------add---------------");
+    }
+}
+```
+
+解：
+
+```java
+public class CglibProxy implements MethodInterceptor{
+    private Enhancer enhancer = new Enhancer();
+    public Object getProxy(Class clazz){
+       //设置需要创建子类的类
+       enhancer.setSuperClass(clazz);
+       enhancer.setCallback(this);
+       //通过字节码技术动态创建子类实例
+       return enhancer.create();
+    }
+    //实现MethodInterceptor接口方法
+    public Object intercept(Object obj,Method method,Object[] args,MethodProxy proxy)throws Throwable{
+        System.out.println("前置代理");
+        //通过代理类调用父类中的方法
+        Object result = proxy.invokeSuper(obj,args);
+        System.out.println("后置代理");
+        return result;
+    }
+}
+
+public class DoCGLib{
+    public static void main(String[] args){
+        CglibProxy proxy = new CglibProxy();
+        //通过生成子类的方式创建代理类
+        UserServiceImpl proxyImp = (UserServiceImpl)proxy.getProxy(UserServiceImpl.class);
+        proxyImp.add();
+    }
+}
+```
+
+#### 九、Spring的AOP是怎么实现的？
+
+Spring AOP中的动态代理主要有两种方式，JDK动态代理和CGLIB动态代理。
+
+JDK动态代理通过反射来接收被代理的类，并且要求被代理的类必须实现一个接口。JDK动态代理的核心是InvocationHandler接口和Proxy类。
+
+如果目标类没有实现接口，那么Spring AOP会选择使用CGLIB来动态代理目标类。
+
+CGLIB(Code Generation Library)，是一个代码生成的类库，可以在运行时动态的生成某个类的子类，注意，CGLIB是通过继承的方式做的动态代理，因此如果某个类被标记为final，那么它是无法使用CGLIB做动态代理的。
 
