@@ -201,5 +201,28 @@ Maven 插件：org.codehaus.mojo:jspc-maven-plugin
                redirectPort="8443" />
 ```
 
+通过Tomcat源码可知：`<Executor>`标签中实际上使用的是 tomcat 声明的一个接口，`org.apache.catalina.Executor`。扩展自J.U.C标准接口`java.util.concurrent.Executor`。tomcat中的实现类为`org.apache.catalina.core.StandardThreadExecutor`
+
+总结：Tomcat IO 连接器使用的线程池实际上是标准的 Java 线程池的扩展，最大线程数量和最小线程数量实际上分别是MaximumPoolSize 和 CorePoolSize。
+
+#### 通过JMX
+
+评估一些参考：
+
+1.正确率（Jmeter的测试数据）
+
+2.Load（CPU->JVM GC）
+
+3.TPS/QPS（越大越好）
+
+4.CPU密集型（加密解密、算法）
+
+5.I/O密集型，网络、文件读写等
 
 
+
+问题：
+
+到底设置多少线程数才是最优？
+
+首先，评估整体的请求量，假设100W QPS，有机器数量10台，每台支撑1W QPS。
