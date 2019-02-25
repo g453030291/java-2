@@ -55,3 +55,22 @@ io查看：
 TPS：
 
 QPS：一次查询时间
+
+
+
+查看系统内所有java应用pid：jps
+
+查看某个java应用的资源dump：jmap -heap （pid号）
+
+
+
+##### 什么时候可能会触发STW的Full GC？
+
+1.Perm空间不足。
+
+2.CMS GC时出现promotion failed和concurrent mode failure（concurrent mode failure发生的原因一般是CMS正在进行，但是由于老年代空间不足，需要尽快回收老年代里面不再被使用的对象，这时停止所有的线程，同时终止CMS，直接进行Serial Old GC）；
+
+3.统计得到的Young GC晋升到老年代的平均大小大于老年代的剩余空间；
+
+4.主动触发Full GC（执行jmap -histo:live [pid]）来避免碎片问题。
+
