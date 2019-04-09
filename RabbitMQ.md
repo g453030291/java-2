@@ -1,3 +1,5 @@
+#### RabbitMQ基础概念及常用命令：  
+
 RabbitMQ高可用负载均衡集群：
 
 ![RabbitMQ高可用负载均衡集群](https://github.com/g453030291/java-2/blob/master/images/RabbitMQ高可用负载均衡集群.png)
@@ -52,9 +54,125 @@ rabbitmqctl stop_app
 rabbitmq-plugins enable rabbitmq_management
 ```
 
+关闭应用：`rabbitmqctl stop_app`
+
+启动应用：`rabbitmqctl start_app`
+
+节点状态：`rabbitmqctl status`
+
+添加用户：`rabbitmqctl add_user username password`
+
+列出所有用户：`rabbitmqctl list_users`
+
+删除用户：`rabbitmqctl delete_user username`
+
+清除用户权限：`rabbitmqctl clear_permissions -p vhostpath username`
+
+列出用户权限：`rabbitmqctl list_user_permissions username`
+
+修改密码：`rabbitmqctl change_password username newpassword`
+
+设置用户权限：`rabbitmqctl set_permissions -p vhostpath username ".*"".*"".*"`
+
+创建虚拟主机：`rabbitmqctl add_vhost chostpath`
+
+列出所有虚拟主机：`rabbitmqctl list_vhosts`
+
+列出虚拟主机上所有权限：`rabbitmqctl list_permissions -p vhostpath`
+
+删除虚拟主机：`rabbitmqctl delete_vhost vhostpath`
+
+查看所有队列信息：`rabbitmqctl list_queues`
+
+清除队列里的消息：`rabbitmqctl -p vhostpath purge_queue blue`
+
+移除所有数据，要在rabbitmqctl stop_app之后使用：`rabbitmqctl reset`
+
+组成集群命令：`rabbitmqctl join_cluster <clusternode> [--ram]`
+
+查看集群状态：`rabbitmqctl cluster_status`
+
+修改集群节点的存储形式：`rabbitmqctl change_cluster_node_type disc|ram`
+
+忘记节点：`rabbitmqctl forget_cluster_node [--offline]`
+
+修改节点名称：`rabbitmqctl rename_cluster_node oldname1 newnode1 [oldnode2] [newnode2]`
+
 注意：
 
 启动rabbitmq之前，需要修改配置文件`vim  /usr/lib/rabbitmq/lib/rabbitmq_server-3.6.5/ebin/rabbit.app`，修改启动loopback_users，后面为一个json数组，需要去掉无关的符号。
 
 安装完图形界面插件，默认端口号为15672。访问地址：http://192.168.0.108:15672。默认用户名、密码为：guest
+
+#### Hello World:
+
+````java
+public class Procuder {
+
+	public static void main(String[] args) throws IOException, TimeoutException {
+		//1.创建一个ConnectionFactory
+		ConnectionFactory connectionFactory = new ConnectionFactory();
+
+		connectionFactory.setHost("192.168.0.110");
+		connectionFactory.setPort(5672);
+		connectionFactory.setVirtualHost("/");
+
+		//2.通过连接工厂创建连接
+		Connection connection = connectionFactory.newConnection();
+
+		//3.通过connection创建channel
+		Channel channel = connection.createChannel();
+
+		//4.通过channel发送消息
+		for (int i = 0;i < 9999 ; i++){
+			String msg = "hello rabbitmq";
+			channel.basicPublish("","test001",null,msg.getBytes());
+		}
+
+		channel.close();
+		connection.close();
+
+	}
+}
+````
+
+````java
+public class Consumer {
+
+	public static void main(String[] args) throws Exception{
+		//1.创建一个ConnectionFactory
+		ConnectionFactory connectionFactory = new ConnectionFactory();
+
+		connectionFactory.setHost("192.168.0.110");
+		connectionFactory.setPort(5672);
+		connectionFactory.setVirtualHost("/");
+
+		//2.通过连接工厂创建连接
+		Connection connection = connectionFactory.newConnection();
+
+		//3.通过connection创建channel
+		Channel channel = connection.createChannel();
+
+		//4.声明（创建）一个队列
+		String queueName = "test001";
+		channel.queueDeclare(queueName,true,false,false,null);
+
+		//5.创建消费者
+		QueueingConsumer queueingConsumer = new QueueingConsumer(channel);
+
+		//6.设置channel
+		channel.basicConsume(queueName,true,queueingConsumer);
+
+		//7.获取消息
+		while (true){
+			QueueingConsumer.Delivery delivery = queueingConsumer.nextDelivery();
+			String msg = new String(delivery.getBody());
+			System.out.println("消费端："+msg);
+			//Envelope envelope = delivery.getEnvelope();
+		}
+
+	}
+
+}
+````
 
