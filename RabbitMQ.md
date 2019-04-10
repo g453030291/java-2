@@ -176,3 +176,74 @@ public class Consumer {
 }
 ````
 
+#### Exchange(交换机):
+
+​	接受消息，并根据路由键转发消息所绑定的队列。
+
+![rabbitmq交换机](https://github.com/g453030291/java-2/blob/master/images/rabbitmq交换机.png)
+
+Name：交换机名称
+
+Type：交换机类型direct、topic、fanout、headers
+
+Durability：是否需要持久化，true为持久化
+
+Auto Delete：当最后一个绑定到Exchange上的队列删除后，自动删除该Exchange
+
+Internal：当前Exchange是否用于RabbitMQ内部使用，默认为False
+
+Arguments：扩展参数，用户扩展AMQP协议自定制化使用
+
+Direct Exchange：
+
+![Direct Exchange](https://github.com/g453030291/java-2/blob/master/images/Direct Exchange.png)
+
+​	所有发送到Direct Exchange的消息被转发到RouteKey中指定的Queue。注意：Direct模式可以使用RabbitMQ自带的Exchange：default Exchange，所以不需要将Exchange进行任何绑定（binding）操作，消息传递时，RouteKey必须完全匹配才会被队列接受，否则该消息会被放弃。
+
+Topic Exchange：
+
+![Topic Exchange](https://github.com/g453030291/java-2/blob/master/images/Topic Exchange.png)
+
+​	所有发送到Topic Exchange的消息被转发到所有关心RouteKey中指定Topic的Queue上。Exchange将RouteKey和某Topic进行模糊匹配，此时队列需要绑定一个Topic。
+
+注意：可以使用通配符进行模糊匹配。符号"#"匹配一个或多个词，符合"*"匹配不多不少一个词。
+
+例如："log.#"能够匹配到"log.info.oa"
+
+​	    "log.*"只会匹配到"log.erro"
+
+Fanout Exchange：
+
+![Fanout Exchange](https://github.com/g453030291/java-2/blob/master/images/Fanout Exchange.png)
+
+​	不处理路由键，只需要简单的将队列绑定到交换机上。发送到交换机的消息都会被转发到与该交换机绑定的所有队列上。Fanout交换机转发消息是最快的。
+
+#### Binding（绑定）：
+
+​	Exchange和Exchange、Queue之间的连接关系。Binding中可以包含Routing Key。
+
+#### Queue（消息队列）：
+
+​	消息队列，实际存储消息数据。Durability，是否持久化（Durable：是，Transient：否）。Auto delete：如选yes，代表当最后一个监听被移除后，该Queue会自动被删除。
+
+#### Message（消息）：
+
+​	服务器和应用程序之间传送的数据。本质上就是一段数据，由Properties和Payload（Body）组成。常用属性：delivery model、headers（自定义属性）。其他属性，content_type、content_encoding、priority、correlation_id、reply_to、expiration、message_id、timestamp、type、user_id、app_id、cluster_id。
+
+#### Virtual host（虚拟主机）：
+
+​	虚拟地址，用于进行逻辑隔离，最上层的消息路由。一个Virtual Host里面可以有若干个Exchange和Queue。同一个Virtual Host里面不能有相同名称的Exchange或Queue。
+
+#### 消息如何保障100%的投递成功？
+
+生产端-可靠性投递：
+
+消息落库，对消息状态进行打标。
+
+![消息落库](https://github.com/g453030291/java-2/blob/master/images/消息落库.png)
+
+消息的延迟投递，做二次确认，回调检查。
+
+![消息的延迟投递](https://github.com/g453030291/java-2/blob/master/images/消息的延迟投递.png)
+
+#### 幂等性概念： 
