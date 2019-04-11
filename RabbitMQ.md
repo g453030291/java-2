@@ -247,3 +247,53 @@ Fanout Exchange：
 ![消息的延迟投递](https://github.com/g453030291/java-2/blob/master/images/消息的延迟投递.png)
 
 #### 幂等性概念： 
+
+借鉴数据库乐观锁机制：比如执行一条更新库存的sql语句。
+
+`update t_reps set count = count -1 ,version = version +1 where version = 1`
+
+消费端-幂等性保障：海量订单产生的业务高峰期，如何避免消息的重复消费问题？
+
+消费端实现幂等性，就意味着，我们的消息永远不会消费多次，即使我们收到了多条一样的消息。
+
+主流幂等性解决方案：
+
+1.唯一ID+指纹码机制，利用数据库主键去重
+
+`select count(1) from t_order where id = 唯一ID+指纹码`
+
+好处，实现简单。坏处，高并发下有数据库写入性能瓶颈。解决方案，跟进ID进行分库分表进行算法路由。
+
+2.利用Redis的原子性去实现
+
+需要考虑的问题。
+
+第一：我们是否要进行数据库落库，如果落库的话，关键解决的问题是数据库和缓存如何做到原子性？
+
+第二：如果不进行落库，那么都存储到缓存中，如何设置定时同步的策略？
+
+#### Confirm确认消息：
+
+![Confirm确认消息](https://github.com/g453030291/java-2/blob/master/images/Confirm确认消息.png)
+
+消息的确定，是指生产者投递消息后，如果Broker收到消息，则会给生产者一个应答。
+
+生产者进行接收应答，用来确定这条消息是否正常的发送到Broker，这种方式也是消息的可靠性投递的核心保障。
+
+如何实现Confirm确认消息？
+
+第一：在channel上开启确认模式：channel.confirmSelect()
+
+第二：在channel 上添加监听：addConfirmListener，监听成功和失败的返回结果，根据具体的结果对消息进行重新发送、或记录日志等后续处理。
+
+#### Return消息机制：
+
+![Return消息机制](https://github.com/g453030291/java-2/blob/master/images/Return消息机制.png)
+
+Return Listener用于处理一些不可路由的消息。
+
+我们的消息生产者，通过指定一个Exchange和RoutingKey，把消息送达到某一个队列中去，然后我们的消费者监听队列，进行消费处理操作。
+
+但是某些情况下，如果我们在发送消息的时候，当前的exchange不存在或者指定的路由key路由不到，这个时候如果我们需要监听这种不可达的消息，就要使用Return Listener。
+
+基础API汇总有一个关键配置：Mandatory，如果为true，则监听器会接收到路由不可达的消息，然后进行后续处理，如果为false，那么broker端自动删除该消息。
