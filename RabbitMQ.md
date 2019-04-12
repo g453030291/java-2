@@ -297,3 +297,92 @@ Return Listener用于处理一些不可路由的消息。
 但是某些情况下，如果我们在发送消息的时候，当前的exchange不存在或者指定的路由key路由不到，这个时候如果我们需要监听这种不可达的消息，就要使用Return Listener。
 
 基础API汇总有一个关键配置：Mandatory，如果为true，则监听器会接收到路由不可达的消息，然后进行后续处理，如果为false，那么broker端自动删除该消息。
+
+#### 消费端消息自定义监听：
+
+````java
+public class MyConsumer extends DefaultConsumer{
+  public MyConsumer(Channel channel){
+    super(channel);
+  }
+  @Override
+  public void handleDelivery(String consumerTag,Envelope envelope,BasicProperties properties,byte[] body)throws IOException{
+    
+  }
+}
+````
+
+#### 消费端限流：
+
+RabbitMQ提供了一种qos（服务质量保证）功能，即在非自动确认消息的前提下，如果一定数目的消息（通过基于consume或者channel设置qos的值）未被确认前，不进行消费新的消息。
+
+`void BasicQos(init prefetchSize,ushort prefetchCount,boolean global);`
+
+参数解释：
+
+prefetchSize：0
+
+prefetchCount：告诉RabbitMQ不要同时给一个消费者推送多于N个消息，即一旦有N个消息还没有ack，则该consumer将block掉，直到有消息ack
+
+global：true/false是否将上面设置应用于channel，简单说，就是上面限制是channel级别的还是consumer级别
+
+prefetchSize和flobal这两项，rabbitmq没有实现，暂且不研究。
+
+prefetch_count在no_ask=false的情况下生效，即在自动应答的情况下，这两个值是不生效的。
+
+#### 消费端ACK与重回队列：
+
+消费端的手工ACK和NACK：
+
+消费端进行消费的时候，如果由于业务异常我们可以进行日志记录，然后进行补偿。
+
+如果由于服务器宕机等严重问题，那我们就需要手工进行ACK，保障消费端消费成功。
+
+消费端的重回队列：
+
+消费端重回队列是为了对没有处理成功的消息，把消息重新回递给Broker。一般在实际应用中，都会关闭重回队列，也就是设置为false。
+
+#### TTL队列/消息：
+
+TTL：
+
+Time To Live的缩写，也就是生存时间。
+
+RabbitMQ支持消息的过期时间，在消息发送时可以进行指定。
+
+RabbitMQ支持队列的过期时间，从消息入队开始计算，只要超过了队列的超时时间配置，那么消息会自动的清除。
+
+#### 死信队列：
+
+DLX：Dead-Letter-Exchange
+
+利用DLX，当消息在一个队列中变成死信之后，它能被重新publish到另一个Exchange，这个Exchange就是DLX。
+
+消息变成死信有以下几种情况：
+
+1.消息被拒绝（basic.reject/basic.nack）并且requeue=false
+
+2.消息TTL过期
+
+3.队列达到最大长度
+
+DLX也是一个正常的Exchange，和一般的Exchange没有区别，它能在任何的队列上被指定，实际上就是设置某个队列的属性。
+
+当这个队列中有死信时，RabbitMQ就会自动的将这个消息重新发布到设置的Exchange上去，进而被路由到另一个队列。
+
+可以监听这个队列中消息做相应处理，这个特性可以弥补RabbitMQ3.0以前支持的immediate参数的功能。
+
+死信队列设置：
+
+首先需要设置死信队列的exchange和queue，然后进行绑定：
+
+Exchange:dlx.exchange
+
+Queue:dlx.queue
+
+RoutingKey:#
+
+然后我们进行正常声明交换机、队列、绑定，只不过我们需要在队列上加上一个参数即可：`arguments.puc("x-dead-letter-exchange","dlx.exchange");`
+
+这样消息在过期、requeue、队列在达到最大长度时，消息就可以直接路由到死信队列。
+
