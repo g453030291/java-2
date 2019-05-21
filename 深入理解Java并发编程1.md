@@ -81,3 +81,85 @@ Save 1;
 
 以上情况，线程1对于变量a的修改就不具有可见性。
 
+#### 八、什么是线程优先级？线程优先级有什么用？
+
+虽然Java线程调度是系统自动完成的，但是我们还是可以"建议"系统给某些线程多分配一点执行时间，另一些线程可以少分配一点。这项操作可以通过设置线程优先级来完成。Java语言一共设置了10个级别的线程优先级（Thread.MIN_PRIORITY至Thread.MAX_PRIORITY），在两个线程同时处于Ready状态时，优先级越高的线程越容易被系统选择执行。
+
+#### 九、什么是守护线程？如何创建守护线程？
+
+在java中有两类线程：User Thread(用户线程)、Daemon Thread(守护线程)。用户线程一般用户执行用户级任务，而守护线程也就是"后台线程"，一般用来执行后台任务，守护线程最典型的应用就是GC。
+
+这两种线程其实是没有什么区别的，唯一区别就是Java虚拟机在所有"用户线程"都结束后就会退出。
+
+我们可以通过setDaemon()方法通过传递true为参数，使线程成为一个守护线程。我们必须在启动线程之前调用一个线程的setDaemon()方法。否则，就会抛出java.lang.IllegalThreadStateException。
+
+可以使用isDaemon（）方法来检查线程是否是守护线程。
+
+注意：在Daemon线程中产生的新线程也是Daemon的。
+
+#### 十、什么是ThreadLocal，和线程有什么关系？
+
+ThreadLocal是java.lang下面的一个类，是用来解决java多线程程序中并发问题的一种途径。通过为每一个线程创建一份共享变量的副本来保证各个线程之间的变量的访问和修改互相不影响。
+
+ThreadLocal存放的值是线程内共享的，线程间互斥的，主要用于线程内共享一些数据，避免通过参数来传递，这样处理后，能够优雅的解决一些实际问题。
+
+比如一次用户的页面请求操作，我们可以在最开始的filter中，把用户信息保存在ThreadLocal中，再同一次请求中，再使用到用户信息，就可以直接到ThreadLocal中获取就可以了。
+
+还有一个典型的应用就是保存数据库连接，我们可以在第一次初始化Connection的时候，把它保存在ThreadLocal中。
+
+ThreadLocal有四个方法：
+
+initialValue：返回此线程局部变量的初始值
+
+get：返回此线程局部变量的当前线程副本中的值。如果这是线程第一次调用该方法，则创建并初始化此副本。
+
+set：将此线程局部变量的当前线程副本中的值设置为指定值。许多应用程序不需要这项功能，他们只依赖于initialValue（）方法来设置线程局部变量的值。
+
+remove：移除此线程局部变量的值。
+
+#### 十一、什么是线程池？
+
+线程池是池化技术的一种典型实现，所谓池化技术就是提前保存大量的资源，以备不时之需。在机器资源有限的情况下，使用池化技术可以大大提高资源的利用率，提升性能。
+
+#### 十二、为什么不建议使用Executors创建线程池？
+
+Executors底层是通过LinkedBlockingQueue实现的。
+
+LinkedBlockingQueue是一个用链表实现的有界阻塞队列，容量可以选择进行设置，不设置的话，将是一个无边界的阻塞队列，最大长度为Integer.MAX_VALUE。
+
+而Executor创建线程池时，并未指定容量。此时，LinkedBlockingQueue就是一个无边界队列，对于一个无边界队列来说，可以不断的向队列中加入任务的，这种情况下就可能因为任务过多而导致内存溢出问题。
+
+#### 十三、Java中如何使用线程池？
+
+推荐使用guava提供的ThreadFactoryBuilder来创建线程池。
+
+```java
+public class ExecutorsDemo{
+  private static ThreadFactory NamedThreadFactory = new ThreadFactoryBuilder().setNameFormat("demo-pool-%d").build();
+  
+  private static ExecutorService pool = new ThreadPoolExecutor(5,200,0L,TimeUnit.MILLISECONDS,new LinkedBlockingQueue<Runnable>(1024),namedThreadFactory,new ThreadPoolExecutor.AbrtPolicy());
+  
+  public static void main(String[] args){
+    for(int i=0;i<Integer.MAX_VALUE;i++){
+      pool.execute(new SubThread());
+    }
+ }
+}
+```
+
+#### 十四、Executors类可以创建多少种线程池，各有什么特点？
+
+Executors的创建线程池的方法，创建出来的线程池都实现了ExecutorService接口。常用方法有以下几个：
+
+newFiexedThreadPool(int Threads)：创建固定数目的线程池。
+
+newCachedThreadPool()：创建一个可缓存的线程池，调用execute将重用以前构造的线程（如果线程可用）。如果没有可用的线程，则创建一个新线程。终止并从缓存中移除那些已有60秒钟未被使用的线程。
+
+newSingleThreadExecutor()：创建一个单线程化的Executor。
+
+newScheduledThreadPool(itn corePoolSize)：创建一个支持定时及周期性的任务执行的线程池，多数情况下可以用来替代Timer类。
+
+#### 十五、Java中如何创建线程？
+
+在Java中，共有四种方式可以创建线程，分别是继承Thread类创建线程、实现Runnable接口创建线程、通过Callable和FutureTask创建线程以及通过线程池创建线程。
+
