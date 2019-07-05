@@ -196,13 +196,13 @@ Arguments：扩展参数，用户扩展AMQP协议自定制化使用
 
 Direct Exchange：
 
-![Direct Exchange](https://github.com/g453030291/java-2/blob/master/images/Direct Exchange.png)
+![Direct Exchange](https://github.com/g453030291/java-2/blob/master/images/DirectExchange.png)
 
 ​	所有发送到Direct Exchange的消息被转发到RouteKey中指定的Queue。注意：Direct模式可以使用RabbitMQ自带的Exchange：default Exchange，所以不需要将Exchange进行任何绑定（binding）操作，消息传递时，RouteKey必须完全匹配才会被队列接受，否则该消息会被放弃。
 
 Topic Exchange：
 
-![Topic Exchange](https://github.com/g453030291/java-2/blob/master/images/Topic Exchange.png)
+![Topic Exchange](https://github.com/g453030291/java-2/blob/master/images/TopicExchange.png)
 
 ​	所有发送到Topic Exchange的消息被转发到所有关心RouteKey中指定Topic的Queue上。Exchange将RouteKey和某Topic进行模糊匹配，此时队列需要绑定一个Topic。
 
@@ -214,7 +214,7 @@ Topic Exchange：
 
 Fanout Exchange：
 
-![Fanout Exchange](https://github.com/g453030291/java-2/blob/master/images/Fanout Exchange.png)
+![Fanout Exchange](https://github.com/g453030291/java-2/blob/master/images/FanoutExchange.png)
 
 ​	不处理路由键，只需要简单的将队列绑定到交换机上。发送到交换机的消息都会被转发到与该交换机绑定的所有队列上。Fanout交换机转发消息是最快的。
 
@@ -483,3 +483,113 @@ rabbitmq-plugins enable rabbitmq_shovel
 支持集群消息负载均衡，保障消息落到具体SET集群的负载均衡
 
 支持消息路由策略，指定某些消息路由到指定的SET集群
+
+
+
+RabbitMQ的Spring配置示例代码:
+
+```java
+package com.ysol.web.api.config;
+
+import com.ysol.web.api.rabbitmq.MessageDelegate;
+import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
+import org.springframework.amqp.support.ConsumerTagStrategy;
+import org.springframework.context.annotation.Bean;
+
+import java.util.UUID;
+
+/**
+ * rabbitmq配置类
+ */
+//@Configuration
+//@ComponentScan({"com.ysol.web.api.*"})
+public class RabbitMQConfig {
+
+	@Bean
+	public ConnectionFactory connectionFactory(){
+		CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
+		connectionFactory.setAddresses("172.168.10.182");
+		connectionFactory.setUsername("guest");
+		connectionFactory.setPassword("guest");
+		connectionFactory.setVirtualHost("/");
+		return connectionFactory;
+	}
+
+	@Bean
+	public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory){
+		RabbitAdmin rabbitAdmin = new RabbitAdmin(connectionFactory);
+		rabbitAdmin.setAutoStartup(true);
+		return rabbitAdmin;
+	}
+
+	@Bean
+	public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory){
+		RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+		return rabbitTemplate;
+	}
+
+	@Bean
+	public SimpleMessageListenerContainer messageListener(ConnectionFactory connectionFactory){
+		SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(connectionFactory);
+		container.setQueues(queue001());
+		container.setConcurrentConsumers(1);
+		container.setMaxConcurrentConsumers(5);
+		container.setDefaultRequeueRejected(false);
+		container.setAcknowledgeMode(AcknowledgeMode.AUTO);
+		container.setConsumerTagStrategy(new ConsumerTagStrategy() {
+			@Override
+			public String createConsumerTag(String queue) {
+				return queue + "_" + UUID.randomUUID().toString();
+			}
+		});
+//		container.setMessageListener(new ChannelAwareMessageListener() {
+//			@Override
+//			public void onMessage(Message message, Channel channel) throws Exception {
+//				String msg = new String(message.getBody());
+//				System.out.println("收到消息："+msg);
+//			}
+//		});
+
+		MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
+		//默认接受消息的方法
+		adapter.setDefaultListenerMethod("handleMessage");
+		adapter.setMessageConverter(new TextMessageConverter());
+
+		container.setMessageListener(adapter);
+//		队列名和方法名对应的设置,来绑定某个方法来处理某个队列的消息
+//		Map<String,String> queueOrTagToMethodName = new HashMap<>();
+//		queueOrTagToMethodName.put("queue01","method01");
+//		queueOrTagToMethodName.put("queue02","method02");
+//		adapter.setQueueOrTagToMethodName(queueOrTagToMethodName);
+
+//		GsonHttpMessageConverter converter = new GsonHttpMessageConverter();
+//		adapter.setMessageConverter(converter);
+
+		return container;
+	}
+
+	@Bean
+	public TopicExchange topicExchange001(){
+		return new TopicExchange("topic001",true,false);
+	}
+
+	@Bean
+	public Queue queue001(){
+		return new Queue("queue001",true);
+	}
+
+	@Bean
+	public Binding binding001(){
+		return BindingBuilder.bind(queue001()).to(topicExchange001()).with("spring.*");
+	}
+
+}
+
+```
+
