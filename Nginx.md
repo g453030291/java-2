@@ -443,13 +443,15 @@ Context：http，server，location
 
 指令：autoindex，autoindex_exact_size，autoindex_format，autoindex_localtime
 
-#### concat模块:
+#### content阶段的concat模块:
 
 提升性能：content阶段的concat模块。当页面需要访问多个小文件时，把他们的内容合并到一次http相应中返回，提升性能。
 
 ngx_http_concat_module：`add-module=../nginx-http-concat/`
 
-log阶段：记录请求访问日志ngx_http_log_module,无法禁用
+#### log阶段log模块：
+
+记录请求访问日志ngx_http_log_module,无法禁用
 
 access日志格式：log_format
 
@@ -457,23 +459,23 @@ access日志格式：log_format
 
 对日志文件名包含变量时的优化：open_log_file_cache
 
-替换响应中的字符串：sub模块
+#### 替换响应中的字符串：sub模块
 
 将响应中的字符串替换成新的字符串。ngx_http_sub_filter_module模块，默认未编译进nginx,通过`--with-http_sub_module`启用
 
 sub模块的指令：sub_filter,sub_filter_last_modified,sub_filter_once,sub_filter_types
 
-在响应前后添加内容：addition模块
+#### 在响应前后添加内容：addition模块
 
 不是修改响应本身，而是增加新的url访问子请求，添加内容到响应前后。ngx_http_addition_filter_module模块默认未编译进nginx。通过`--with-http_addition_module`启用。add_before_body，add_after_body，addition_types
 
-Nginx中的变量：
+#### Nginx中的变量：
 
 ![nginx-变量惰性求值](https://github.com/g453030291/java-2/blob/master/images/nginx-变量惰性求值.png)
 
 nginx变量的特性：1.惰性求值：变量在有代码读取前，并不会进行任何编译、取值、存储等操作，这样设计可以增加性能。因为走的代码行数变少了。2.惰性求值带来的问题是，一次http请求中，变量的值会多次发生改变，如何取出对应阶段想要的值。nginx使用了hash表来存储各个阶段的值。供其他模块调用。
 
-### Http框架提供的变量：
+#### Http框架提供的变量：
 
 http请求相关变量：
 
@@ -553,13 +555,15 @@ Nginx系统变量：
 
 ### 防盗链：
 
-referer模块：荣国referer模块，用invalid_referer变量根据配置判断referer头部是否合法。目的，拒绝非正常的网站访问我们站点的资源。默认编译进nginx，通过`--without-http_referer_module`禁用。
+#### referer模块：
+
+通过referer模块，用invalid_referer变量根据配置判断referer头部是否合法。目的，拒绝非正常的网站访问我们站点的资源。默认编译进nginx，通过`--without-http_referer_module`禁用。
 
 指令：valid_referers,referer_hash_bucker_size,referer_hash_max_size
 
 ![nginx-referers模块](https://github.com/g453030291/java-2/blob/master/images/nginx-referers模块.png)
 
-另一种处理防盗链的方式：secure_like模块
+#### 另一种处理防盗链的方式：secure_like模块
 
 第一种：是较为复杂的，可以对用户ip，时间戳，访问uri等等做限制，识别等
 
@@ -569,21 +573,31 @@ referer模块：荣国referer模块，用invalid_referer变量根据配置判断
 
 ![nginx-secure_link模块2](https://github.com/g453030291/java-2/blob/master/images/nginx-secure_link模块2.png)
 
-map模块：通过映射新变量提供更多的可能性。
+#### map模块：
 
-split_clients模块：实现AB测试
+通过映射新变量提供更多的可能性。
+
+#### split_clients模块：
+
+实现AB测试
 
 ![nginx-split_clients模块](https://github.com/g453030291/java-2/blob/master/images/nginx-split_clients模块.png)
 
-需要使用IP地址，或者子网掩码创建新变量，可以使用geo模块：
+#### geo模块：
+
+需要使用IP地址，或者子网掩码创建新变量。
 
 ![nginx-geo模块](https://github.com/g453030291/java-2/blob/master/images/nginx-geo模块.png)
+
+#### geoip模块：
 
 基于MaxMind数据库从客户端地址获取变量(获取用户地理位置)：
 
 ![nginx-geoip模块](https://github.com/g453030291/java-2/blob/master/images/nginx-geoip模块.png)
 
-对客户端keepalive行为控制的指令：
+geoip_country指令：geoid_country;geoip_proxy
+
+#### 对客户端keepalive行为控制的指令：
 
 指令集：keepalive_disable;keepalive_requests;keepalive_timeout;
 
@@ -660,7 +674,27 @@ upstream模块提供的变量（不含cache）:
 | upstream_cookie_名称     | 从上游服务发回的响应头Set-Cookie中取出cookie值               |
 | upstream_trailer_名称    | 从上游服务的响应尾部取到的值                                 |
 
+proxy处理请求的流程：
 
+![nginx-http反向代理流程](https://github.com/g453030291/java-2/blob/master/images/nginx-http反向代理流程.png)
+
+#### proxy模块：
+
+功能：对上游服务使用http/https协议进行反向代理。模块：`ngx_http_proxy_module`。指令：`proxy_pass URL`。
+
+url参数规则：
+
+![nginx-proxy-url参数规则](https://github.com/g453030291/java-2/blob/master/images/nginx-proxy-url参数规则.png)
+
+生成发往上游的请求行：指令：`proxy_method (method)`、`proxy_http_version (1.0|1.1)`
+
+生成发往上游的请求头部：指令：`proxy_set_header (field value)`,(若value为空字符串，则整个header都不会向上游发送)，`proxy_pass_request_headers (on|off)`，
+
+生成发往上游的包体：指令：`proxy_pass_request_body (on|off)`、`proxy_set_body (value)`
+
+接收客户顿请求的包体：指令:`proxy_request_buffering (on|off)`,on:客户端网速较慢，上游服务并发处理能力低，适应高吞吐量场景。off：更及时的响应，降低nginx读写磁盘的消耗，一旦开始发送内容proxy_next_upstream功能失效。
+
+![nginx-proxy客户端包体接收](https://github.com/g453030291/java-2/blob/master/images/nginx-proxy客户端包体接收.png)
 
 # 五、Nginx的系统层性能优化
 
