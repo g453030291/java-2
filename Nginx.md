@@ -696,7 +696,175 @@ url参数规则：
 
 ![nginx-proxy客户端包体接收](https://github.com/g453030291/java-2/blob/master/images/nginx-proxy客户端包体接收.png)
 
+最大包体长度限制：`client_max_body_size 1m`。仅对请求头部中含有Content-Length有效超出最大长度后，返回413错误。
+
+临时文件路径格式：`client_body_temp_path (path)`、`client_body_in_file_only (on|clean|off)`
+
+读取包体超时：`client_body_timeout (60s)`
+
+nginx向上游服务建立连接：
+
+`proxy_connect_timeout (time)`:超时后回向客户端生成http响应502
+
+`proxy_next_upstream http_502|...`
+
+`proxy_socket_keepalive (on|off)`：上游连接启用tcp keepalive
+
+`keepalive connections;`
+
+`keepalive_requests (100)`
+
+`proxy_vind address[transparent]|off`：修改tcp连接中的local address
+
+`proxy_ignore_client_abort (on|off)`:当客户端关闭连接时
+
+`proxy_send_timeout 60s`:向上游发送http请求
+
+nginx接收上游http响应头部：
+
+`proxy_buffer_size 4k`:接收上游的http响应头部
+
+nginx接收上游http响应包体：
+
+`proxy_buffers 8 4k`
+
+`proxy_buffering (on|off)`
+
+`proxy_max_temp_file_size 1024m`
+
+`proxy_temp_file_write_size 8k`
+
+`proxy_temp_path path[level1[level2[level3]]]`
+
+`proxy_busy_buffers_size 8k`:及时转发包体
+
+`proxy_read_timeout 60s`:接收上游时网络速度相关指令
+
+`proxy_limit_rate 0`:接收上游时网络速度相关指令
+
+`proxy_store_access users:rw;`：上游包体的持久化
+
+`proxy_store on|off|string;`：上游包体的持久化
+
+处理上游的响应头：
+
+禁用上游响应头部功能：`proxy_ignore_headers (field...)`
+
+功能：某些响应头部可以改变nginx的行为。
+
+转发上游的响应：`proxy_hide_header (field)`
+
+修改返回的Set-Cookie头部：`proxy_cookie_domain off`、`proxy_cookie_domain (domain replacement)`、`proxy_cookie_path off`、`proxy_cookie_path (path replacement)`
+
+修改返回的Location头部：`proxy_redirect (default|off|redirect replacement)`
+
+上游返回失败时的处理方法：
+
+模块：`proxy_next_upstream (err|timeout|......)`
+
+限制`proxy_next_upstream_timeout (0)`的时间与次数
+
+`proxy_next_upstream_tries (0)`重试次数
+
+用error_page拦截上游失败响应：
+
+当上游响应的响应码大于等于300时，应将响应返回客户端还是按error_page指令处理:`proxy_intercept_errors (on|off)`
+
+nginx上下游双向使用ssl：
+
+![nginx-双向认证时指令示例](https://github.com/g453030291/java-2/blob/master/images/nginx-双向认证时指令示例.png)
+
+浏览器和nginx正确使用缓存：
+
+![nginx-浏览器请求缓存过程](https://github.com/g453030291/java-2/blob/master/images/nginx-浏览器请求缓存过程.png)
+
+nginx作为静态资源服务器，如何与浏览器沟通缓存的过期、存储、继续使用、重新请求？
+
+Etag头部：比较etags能快速确定资源是否变化，也可能被跟踪服务器永久存留。
+
+etag指令：`etag (on|off)`
+
+If-None-Match：是一个条件式请求首部。根据给定资源的日期之后进行过修改才会将资源返回。
+
+not_modified过滤模块：客户端拥有缓存，但不确认缓存是否过期。
+
+expires指令：`expires [modified] time`可以设置具体的时间单位
+
+not_modified过滤模块：`if_modified_sice off|exact|before`
+
+nginx缓存：定义存放缓存的载体：`proxy_cache zone|off`、`proxy_cache_path path`、`proxy_cache_key (string)`、`proxy_cache_valid [code...] time`、`proxy_no_cache string ...`、`proxy_cache_bypass string...`、`proxy_cache_convert_head (on|off)`、`upstream_cache_status`、`proxy_cache_methods GET HEAD`
+
+http头部：`X-Accel-Expires`、`Vary:*`、`Set-Cookie`
+
+nginx如何解决缓存穿透问题？
+
+`proxy_cache_lock on|off`、`proxy_cache_lock_timeout time;`、`proxy_cache_lock_age time`、`proxy_cache_use_stale updating`、`proxy_cache_background_update on|off`、`proxy_cache_background_update on|off`、`proxy_cache_revalidate on|off`
+
+及时清除缓存：
+
+商业版有相关功能，开源版可以使用第三方模块：`ngx_cache_purge`，使用`--add_module=`指令添加模块到nginx中，功能：接收到指定http请求后立刻清除缓存。
+
+七层反向代理对照：uwsgi反向代理、fastcgi反向代理、scgi反向代理、http反向代理
+
+memcached反向代理。
+
+websocket反向代理：
+
+由ngx_http_proxy_module模块实现。
+
+````shell
+proxy_http_version 1.1;
+proxy_set_header Upgrade $http_upgrade; 
+proxy_set_header Connection "upgrade";
+````
+
+上游服务大文件传输，使用slice模块，将一个大文件分解为多个小文件，更好地用缓存为客户端的range协议服务。slice模块对客户端使用断点续传、多线程下载有更好的支持。
+
+模块:`http_slice_module`，通过`--with-http_slice_module启用`
+
+指令：`slice size`
+
+Open_file_cache指令：
+
+`open_file_cache off;`、`open_file_cache_errors on|off`、`open_file_cache_min_uses number`、`open_file_cache_valid time`
+
+#### HTTP2.0
+
+主要特性：传输量大幅减少（以二进制方式传输，表头压缩）、多路复用及相关功能（消息优先级）、服务器消息推送（并行推送）。
+
+![http2.0核心概念](https://github.com/g453030291/java-2/blob/master/images/http2.0核心概念.png)
+
+模块：`ngx_http_v2_module`,通过`--with-http_v2_module`编译nginx加入http2协议的支持。
+
+前提：开启TLS/SSL协议
+
+使用方法：`listen 443 ssl http2`
+
+指令：`http2_push_preload on|off`,`http2_push uri|off`,`http2_max_concurrent_pushes number`,`http2_recv_timeout time`,`http2_idle_timeout time`,`http2_max_concurrent_pushes number`,`http2_max_concurrent_streams number`,`http2_max_field_size size`
+
+#### gRPC反向代理
+
+模块：`ngx_http_grpc_module`,依赖`ngx_http_v2_module`模块
+
+#### TCP反向代理和UDP反向代理：
+
 # 五、Nginx的系统层性能优化
+
+#### 如何高效使用CPU？
+
+设置work进程数量：`worker_processes number`
+
+如何查看nginx上下午切换次数？
+
+`vmstat 1`、`dstat 1`、查找nginxpid:`ps -ef | grep nginx`、查看进程间切换：`pidstat -w -p pid 1`
+
+什么决定CPU时间片大小？
+
+Nice静态优先级：-20 -- 19
+
+Priority动态优先级：0 -- 139
+
+设置work静态优先级：`worker_proiority number`设置上下文：main。一般将nginx的work进程设置为19，也就是最不友好。不主动给其它进程切换CPU。
 
 
 
