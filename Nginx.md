@@ -866,7 +866,5 @@ Priority动态优先级：0 -- 139
 
 设置work静态优先级：`worker_proiority number`设置上下文：main。一般将nginx的work进程设置为19，也就是最不友好。不主动给其它进程切换CPU。
 
-
-
 # 六、从源码视角深入使用Nginx与OpenResty
 
