@@ -2,11 +2,11 @@
 
 RabbitMQ高可用负载均衡集群：
 
-![RabbitMQ高可用负载均衡集群](https://github.com/g453030291/java-2/blob/master/images/RabbitMQ高可用负载均衡集群.png)
+![RabbitMQ高可用负载均衡集群](./images/RabbitMQ高可用负载均衡集群.png)
 
 AMQP协议：
 
-![AMQP协议](https://github.com/g453030291/java-2/blob/master/images/AMQP协议.png)
+![AMQP协议](./images/AMQP协议.png)
 
 Server：又称Broker，接受客户端的连接，实现AMQP实体服务
 
@@ -28,11 +28,11 @@ Queue：也称为Message Queue，消息队列，保存消息并将它们转发�
 
 RabbitMQ架构：
 
-![rabbitmq架构](https://github.com/g453030291/java-2/blob/master/images/rabbitmq架构.png)
+![rabbitmq架构](./images/rabbitmq架构.png)
 
 rabbitmq消息流转：
 
-![rabbitmq消息流转](https://github.com/g453030291/java-2/blob/master/images/rabbitmq消息流转.png)
+![rabbitmq消息流转](./images/rabbitmq消息流转.png)
 
 常用命令：
 
@@ -180,7 +180,7 @@ public class Consumer {
 
 ​	接受消息，并根据路由键转发消息所绑定的队列。
 
-![rabbitmq交换机](https://github.com/g453030291/java-2/blob/master/images/rabbitmq交换机.png)
+![rabbitmq交换机](./images/rabbitmq交换机.png)
 
 Name：交换机名称
 
@@ -196,13 +196,13 @@ Arguments：扩展参数，用户扩展AMQP协议自定制化使用
 
 Direct Exchange：
 
-![Direct Exchange](https://github.com/g453030291/java-2/blob/master/images/DirectExchange.png)
+![Direct Exchange](./images/DirectExchange.png)
 
 ​	所有发送到Direct Exchange的消息被转发到RouteKey中指定的Queue。注意：Direct模式可以使用RabbitMQ自带的Exchange：default Exchange，所以不需要将Exchange进行任何绑定（binding）操作，消息传递时，RouteKey必须完全匹配才会被队列接受，否则该消息会被放弃。
 
 Topic Exchange：
 
-![Topic Exchange](https://github.com/g453030291/java-2/blob/master/images/TopicExchange.png)
+![Topic Exchange](./images/TopicExchange.png)
 
 ​	所有发送到Topic Exchange的消息被转发到所有关心RouteKey中指定Topic的Queue上。Exchange将RouteKey和某Topic进行模糊匹配，此时队列需要绑定一个Topic。
 
@@ -214,7 +214,7 @@ Topic Exchange：
 
 Fanout Exchange：
 
-![Fanout Exchange](https://github.com/g453030291/java-2/blob/master/images/FanoutExchange.png)
+![Fanout Exchange](./images/FanoutExchange.png)
 
 ​	不处理路由键，只需要简单的将队列绑定到交换机上。发送到交换机的消息都会被转发到与该交换机绑定的所有队列上。Fanout交换机转发消息是最快的。
 
@@ -240,11 +240,11 @@ Fanout Exchange：
 
 消息落库，对消息状态进行打标。
 
-![消息落库](https://github.com/g453030291/java-2/blob/master/images/消息落库.png)
+![消息落库](./images/消息落库.png)
 
 消息的延迟投递，做二次确认，回调检查。
 
-![消息的延迟投递](https://github.com/g453030291/java-2/blob/master/images/消息的延迟投递.png)
+![消息的延迟投递](./images/消息的延迟投递.png)
 
 #### 幂等性概念： 
 
@@ -274,7 +274,7 @@ Fanout Exchange：
 
 #### Confirm确认消息：
 
-![Confirm确认消息](https://github.com/g453030291/java-2/blob/master/images/Confirm确认消息.png)
+![Confirm确认消息](./images/Confirm确认消息.png)
 
 消息的确定，是指生产者投递消息后，如果Broker收到消息，则会给生产者一个应答。
 
@@ -288,7 +288,7 @@ Fanout Exchange：
 
 #### Return消息机制：
 
-![Return消息机制](https://github.com/g453030291/java-2/blob/master/images/Return消息机制.png)
+![Return消息机制](./images/Return消息机制.png)
 
 Return Listener用于处理一些不可路由的消息。
 
@@ -392,7 +392,7 @@ RoutingKey:#
 
 实现RabbitMQ的高可用集群，一般在并发和数据量不高的情况下，这种模型非常的好且简单。主备模式也称为Warren模式。所谓的rabbotmq另外一种模式就是warren（兔子窝），就是一个主/备方案（主节点如果挂了，从节点提供服务而已）
 
-![rabbitmq主备模式](https://github.com/g453030291/java-2/blob/master/images/rabbitmq主备模式.png)
+![rabbitmq主备模式](./images/rabbitmq主备模式.png)
 
 HaProxy配置：
 
@@ -411,9 +411,9 @@ server bhz76 192.168.11.77:5672 backup check inter 5000 rise 2 fall 2  #备用�
 
 ​	远程模式可以实现双活的一种模式，简称Shovel模式，所谓Shovel就是我们可以把消息进行不同数据中心的肤质工作，我们可以跨地域的让两个mq集群互联。远距离通信复制，所谓Shovel就是我们可以把消息进行不同数据中心的复制工作。
 
-![rabbitmq远程模式](https://github.com/g453030291/java-2/blob/master/images/rabbitmq远程模式.png)
+![rabbitmq远程模式](./images/rabbitmq远程模式.png)
 
-![rabbitmq远程模式2](https://github.com/g453030291/java-2/blob/master/images/rabbitmq远程模式2.png)
+![rabbitmq远程模式2](./images/rabbitmq远程模式2.png)
 
 Shovel集群的配置，首先启动rabbitmq插件，命令如下：
 
@@ -428,7 +428,7 @@ rabbitmq-plugins enable rabbitmq_shovel
 
 最后我们需要源服务器和目的地服务器都使用相同的配置文件(rabbitmq.config)
 
-![rabbitmq远程模式配置](https://github.com/g453030291/java-2/blob/master/images/rabbitmq远程模式配置.png)
+![rabbitmq远程模式配置](./images/rabbitmq远程模式配置.png)
 
 #### 镜像模式：
 
@@ -436,7 +436,7 @@ rabbitmq-plugins enable rabbitmq_shovel
 
 ​	Mirror镜像队列，目的是为了保证rabbitmq数据的高可靠性解决方案，主要就是实现数据的同步，一般来讲就是2-3个节点实现数据同步（对于100%数据可靠性解决方案一般是3节点）。
 
-![rabbitmq镜像模式](https://github.com/g453030291/java-2/blob/master/images/rabbitmq镜像模式.png)
+![rabbitmq镜像模式](./images/rabbitmq镜像模式.png)
 
 #### 多活模式：
 
@@ -444,7 +444,7 @@ rabbitmq-plugins enable rabbitmq_shovel
 
 ​	RabbitMQ部署架构采用双中心模式（多中心），那么在两套（或多套）数据中心中各部署一套RabbitMQ集群，各中心的RabbitMQ服务除了需要为业务提供正常的消息服务外，中心之间还需要实现部分队列消息共享。
 
-![rabbitmq多活模式](https://github.com/g453030291/java-2/blob/master/images/rabbitmq多活模式.png)
+![rabbitmq多活模式](./images/rabbitmq多活模式.png)
 
 #### Federation插件：
 
@@ -452,13 +452,13 @@ rabbitmq-plugins enable rabbitmq_shovel
 
 ​	Federation Exchanges，可以看成Downstream（下游）从Upstream（上游）主动拉取消息，但并不是拉取所有消息，必须是在Downstream上已经明确定义Bindings关系的Exchange，也就是有实际的物理Queue来接受消息，才会从Upstream拉取消息到Downstream。使用AMQP协议实施代理间通信，Downstream会将绑定关系组合在一起，绑定/解除绑定命令将发送到Upstream交换机。因此，Federation Exchange只接受具有订阅的消息。
 
-![rabbitmqFederation插件](https://github.com/g453030291/java-2/blob/master/images/rabbitmqFederation插件.png)
+![rabbitmqFederation插件](./images/rabbitmqFederation插件.png)
 
 #### RabbitMQ集群镜像模式构建：
 
 #### rabbitmq生产环境架构：
 
-![rabbitmq生产环境架构](https://github.com/g453030291/java-2/blob/master/images/rabbitmq生产环境架构.png)
+![rabbitmq生产环境架构](./images/rabbitmq生产环境架构.png)
 
 需要实现的功能：
 
