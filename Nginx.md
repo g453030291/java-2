@@ -36,6 +36,10 @@ make install
 
 安装nginx提供的vim插件：`cp -r contrib/vim/* ~/.vim/`
 
+nginx的模块：
+
+![nginx-模块](./images/nginx-模块.png)
+
 Nginx配置语法：
 
 1.配置文件由指令与指令块构成
