@@ -106,7 +106,7 @@ vim rotate.sh
 #4.脚本中向nginx发送了 -USR1信号,和-s reopen是一样的
 ````
 
-![nginx-rotate](https://github.com/g453030291/java-2/blob/master/images/nginx-rotate.png)
+![nginx-rotate](./images/nginx-rotate.png)
 
 配置Nginx静态资源服务器示例：
 
@@ -237,19 +237,19 @@ http{
 
 # 二、Nginx架构基础
 
-![nginx进程结构](https://github.com/g453030291/java-2/blob/master/images/nginx进程结构.png)
+![nginx进程结构](./images/nginx进程结构.png)
 
 work进程、master进程、cache manager进程、cache loader进程
 
-![nginx信号](https://github.com/g453030291/java-2/blob/master/images/nginx信号.png)
+![nginx信号](./images/nginx信号.png)
 
 使用nginx -s reload、stop......等等就是向nginx各进程发送linux进程间信号。（这是符合linux进程管理规则的）
 
-![nginx-reload流程](https://github.com/g453030291/java-2/blob/master/images/nginx-reload流程.png)
+![nginx-reload流程](./images/nginx-reload流程.png)
 
 work-shutdown-timeout：新版本nginx中，可以添加对旧的work子进程最大工作时间。也就是添加定时器，关闭work子进程。
 
-![nginx热升级流程](https://github.com/g453030291/java-2/blob/master/images/nginx热升级流程.png)
+![nginx热升级流程](./images/nginx热升级流程.png)
 
 work进程优雅的关闭：
 
@@ -265,7 +265,7 @@ work进程优雅的关闭：
 
 nginx事件驱动模型：
 
-![nginx异步非阻塞事件驱动模型epoll](https://github.com/g453030291/java-2/blob/master/images/nginx异步非阻塞事件驱动模型epoll.png)
+![nginx异步非阻塞事件驱动模型epoll](./images/nginx异步非阻塞事件驱动模型epoll.png)
 
 nginx连接池：
 
@@ -279,15 +279,15 @@ nginx内存会提前申请一块较大内存。给nginx使用。需要分配小�
 
 Listen指令：
 
-![nginx-listen指令](https://github.com/g453030291/java-2/blob/master/images/nginx-listen指令.png)
+![nginx-listen指令](./images/nginx-listen指令.png)
 
 nginx接收请求事件模块：
 
-![nginx-接收请求事件模块](https://github.com/g453030291/java-2/blob/master/images/nginx-接收请求事件模块.png)
+![nginx-接收请求事件模块](./images/nginx-接收请求事件模块.png)
 
 nginx接收请求http模块：
 
-![nginx-接收请求http模块](https://github.com/g453030291/java-2/blob/master/images/nginx-接收请求http模块.png)
+![nginx-接收请求http模块](./images/nginx-接收请求http模块.png)
 
 正则表达式：
 
@@ -360,17 +360,17 @@ realip_remote_port
 
 指令用法：
 
-![nginx-realip指令](https://github.com/g453030291/java-2/blob/master/images/nginx-realip指令.png)
+![nginx-realip指令](./images/nginx-realip指令.png)
 
 #### rewrite模块:
 
 return指令：
 
-![nginx-return](https://github.com/g453030291/java-2/blob/master/images/nginx-return.png)
+![nginx-return](./images/nginx-return.png)
 
 rewrite指令：
 
-![nginx-rewrite指令](https://github.com/g453030291/java-2/blob/master/images/nginx-rewrite指令.png)
+![nginx-rewrite指令](./images/nginx-rewrite指令.png)
 
 rewrite模块if指令：
 
@@ -471,7 +471,7 @@ sub模块的指令：sub_filter,sub_filter_last_modified,sub_filter_once,sub_fil
 
 #### Nginx中的变量：
 
-![nginx-变量惰性求值](https://github.com/g453030291/java-2/blob/master/images/nginx-变量惰性求值.png)
+![nginx-变量惰性求值](./images/nginx-变量惰性求值.png)
 
 nginx变量的特性：1.惰性求值：变量在有代码读取前，并不会进行任何编译、取值、存储等操作，这样设计可以增加性能。因为走的代码行数变少了。2.惰性求值带来的问题是，一次http请求中，变量的值会多次发生改变，如何取出对应阶段想要的值。nginx使用了hash表来存储各个阶段的值。供其他模块调用。
 
@@ -561,17 +561,17 @@ Nginx系统变量：
 
 指令：valid_referers,referer_hash_bucker_size,referer_hash_max_size
 
-![nginx-referers模块](https://github.com/g453030291/java-2/blob/master/images/nginx-referers模块.png)
+![nginx-referers模块](./images/nginx-referers模块.png)
 
 #### 另一种处理防盗链的方式：secure_like模块
 
 第一种：是较为复杂的，可以对用户ip，时间戳，访问uri等等做限制，识别等
 
-![nginx-secure_link模块](https://github.com/g453030291/java-2/blob/master/images/nginx-secure_link模块.png)
+![nginx-secure_link模块](./images/nginx-secure_link模块.png)
 
 第二种：比较简单，但只能做简单md5匹配
 
-![nginx-secure_link模块2](https://github.com/g453030291/java-2/blob/master/images/nginx-secure_link模块2.png)
+![nginx-secure_link模块2](./images/nginx-secure_link模块2.png)
 
 #### map模块：
 
@@ -581,19 +581,19 @@ Nginx系统变量：
 
 实现AB测试
 
-![nginx-split_clients模块](https://github.com/g453030291/java-2/blob/master/images/nginx-split_clients模块.png)
+![nginx-split_clients模块](./images/nginx-split_clients模块.png)
 
 #### geo模块：
 
 需要使用IP地址，或者子网掩码创建新变量。
 
-![nginx-geo模块](https://github.com/g453030291/java-2/blob/master/images/nginx-geo模块.png)
+![nginx-geo模块](./images/nginx-geo模块.png)
 
 #### geoip模块：
 
 基于MaxMind数据库从客户端地址获取变量(获取用户地理位置)：
 
-![nginx-geoip模块](https://github.com/g453030291/java-2/blob/master/images/nginx-geoip模块.png)
+![nginx-geoip模块](./images/nginx-geoip模块.png)
 
 geoip_country指令：geoid_country;geoip_proxy
 
@@ -605,7 +605,7 @@ geoip_country指令：geoid_country;geoip_proxy
 
 负载均衡：
 
-![nginx-负载均衡](https://github.com/g453030291/java-2/blob/master/images/nginx-负载均衡.png)
+![nginx-负载均衡](./images/nginx-负载均衡.png)
 
 #### 与上游服务相关的stream模块：
 
@@ -619,15 +619,15 @@ http {
 }
 ````
 
-![nginx-upstream模块](https://github.com/g453030291/java-2/blob/master/images/nginx-upstream模块.png)
+![nginx-upstream模块](./images/nginx-upstream模块.png)
 
 #### 加权Round-Robin负载均衡算法：
 
-![nginx-round-robin算法](https://github.com/g453030291/java-2/blob/master/images/nginx-round-robin算法.png)
+![nginx-round-robin算法](./images/nginx-round-robin算法.png)
 
 #### 对上游服务使用keepalive长连接：
 
-![nginx-upstream-keepalive指令](https://github.com/g453030291/java-2/blob/master/images/nginx-upstream-keepalive指令.png)
+![nginx-upstream-keepalive指令](./images/nginx-upstream-keepalive指令.png)
 
 指令集：keepalive;keepalive_requests;keepalive_timeout
 
@@ -643,7 +643,7 @@ http {
 
 问题：宕机或者扩容时，hash算法引发大量路由变更，可能导致缓存大范围失效。可以使用一致性hash算法。
 
-![nginx-一致性hash算法](https://github.com/g453030291/java-2/blob/master/images/nginx-一致性hash算法.png)
+![nginx-一致性hash算法](./images/nginx-一致性hash算法.png)
 
 #### upstream_hash模块，使用一致性hash算法：
 
@@ -676,7 +676,7 @@ upstream模块提供的变量（不含cache）:
 
 proxy处理请求的流程：
 
-![nginx-http反向代理流程](https://github.com/g453030291/java-2/blob/master/images/nginx-http反向代理流程.png)
+![nginx-http反向代理流程](./images/nginx-http反向代理流程.png)
 
 #### proxy模块：
 
@@ -684,7 +684,7 @@ proxy处理请求的流程：
 
 url参数规则：
 
-![nginx-proxy-url参数规则](https://github.com/g453030291/java-2/blob/master/images/nginx-proxy-url参数规则.png)
+![nginx-proxy-url参数规则](./images/nginx-proxy-url参数规则.png)
 
 生成发往上游的请求行：指令：`proxy_method (method)`、`proxy_http_version (1.0|1.1)`
 
@@ -694,7 +694,7 @@ url参数规则：
 
 接收客户顿请求的包体：指令:`proxy_request_buffering (on|off)`,on:客户端网速较慢，上游服务并发处理能力低，适应高吞吐量场景。off：更及时的响应，降低nginx读写磁盘的消耗，一旦开始发送内容proxy_next_upstream功能失效。
 
-![nginx-proxy客户端包体接收](https://github.com/g453030291/java-2/blob/master/images/nginx-proxy客户端包体接收.png)
+![nginx-proxy客户端包体接收](./images/nginx-proxy客户端包体接收.png)
 
 最大包体长度限制：`client_max_body_size 1m`。仅对请求头部中含有Content-Length有效超出最大长度后，返回413错误。
 
@@ -772,11 +772,11 @@ nginx接收上游http响应包体：
 
 nginx上下游双向使用ssl：
 
-![nginx-双向认证时指令示例](https://github.com/g453030291/java-2/blob/master/images/nginx-双向认证时指令示例.png)
+![nginx-双向认证时指令示例](./images/nginx-双向认证时指令示例.png)
 
 浏览器和nginx正确使用缓存：
 
-![nginx-浏览器请求缓存过程](https://github.com/g453030291/java-2/blob/master/images/nginx-浏览器请求缓存过程.png)
+![nginx-浏览器请求缓存过程](./images/nginx-浏览器请求缓存过程.png)
 
 nginx作为静态资源服务器，如何与浏览器沟通缓存的过期、存储、继续使用、重新请求？
 
@@ -832,7 +832,7 @@ Open_file_cache指令：
 
 主要特性：传输量大幅减少（以二进制方式传输，表头压缩）、多路复用及相关功能（消息优先级）、服务器消息推送（并行推送）。
 
-![http2.0核心概念](https://github.com/g453030291/java-2/blob/master/images/http2.0核心概念.png)
+![http2.0核心概念](./images/http2.0核心概念.png)
 
 模块：`ngx_http_v2_module`,通过`--with-http_v2_module`编译nginx加入http2协议的支持。
 
